@@ -1,16 +1,16 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: podinfo
-  namespace: test
+  name: frontend
+  namespace: frontend
   annotations:
     metric-config.object.istio-requests-total.prometheus/per-replica: "true"
     metric-config.object.istio-requests-total.prometheus/query: |
       sum(
           rate(
               istio_requests_total{
-                destination_workload="podinfo",
-                destination_workload_namespace="test",
+                destination_workload="frontend",
+                destination_workload_namespace="frontend",
                 reporter="destination"
               }[1m]
           )
@@ -18,8 +18,8 @@ metadata:
       count(
         count(
           container_memory_usage_bytes{
-            namespace="test",
-          pod=~"podinfo.*"
+            namespace="frontend",
+          pod=~"frontend.*"
           }
         ) by (pod)
       )
@@ -29,7 +29,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: podinfo
+    name: frontend
   metrics:
     - type: Object
       object:
@@ -37,5 +37,5 @@ spec:
         target:
           apiVersion: v1
           kind: Pod
-          name: podinfo
-        targetValue: 10
+          name: frontend
+        targetValue: 2
